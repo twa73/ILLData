@@ -74,7 +74,7 @@ add_library(TLst SHARED
 	${PROJECT_SOURCE_DIR}/libraries/TLst/TLstFile.cxx
 	)
 root_generate_dictionary(G__TLst TLstEvent.h TLstFile.h MODULE TLst LINKDEF ${PROJECT_SOURCE_DIR}/libraries/TLst/LinkDef.h OPTIONS ${CLING_OPTIONS})
-target_link_libraries(TLst TILLFormat ${ROOT_LIBRARIES})
+target_link_libraries(TLst TILLFormat ${ROOT_LIBRARIES} ${GRSI_LIBRARIES})
 add_dependencies(TLst ILLDataVersion)
 
 add_library(TILLFormat SHARED
@@ -82,13 +82,24 @@ add_library(TILLFormat SHARED
 	${PROJECT_SOURCE_DIR}/libraries/TILLFormat/TILLMnemonic.cxx
 	)
 root_generate_dictionary(G__TILLFormat TILLDetectorInformation.h TILLMnemonic.h MODULE TILLFormat LINKDEF ${PROJECT_SOURCE_DIR}/libraries/TILLFormat/LinkDef.h)
-target_link_libraries(TILLFormat TFipps TFippsLaBr TFippsTAC TFippsPulser)
+target_link_libraries(TILLFormat TFipps TFippsLaBr TFippsTAC TFippsPulser ${GRSI_LIBRARIES})
+
+# ---- macOS: allow unresolved symbols (TIfin::Class etc.) in this dylib
+if(APPLE)
+    # CMake ≥ 3.15 supports target_link_options
+    target_link_options(TILLFormat PRIVATE "-undefined" "dynamic_lookup")
+endif()
+
+target_link_libraries(TILLFormat
+    TFipps TFippsLaBr TFippsTAC TFippsPulser
+    ${GRSI_LIBRARIES}
+)
 
 add_library(TILLDataParser SHARED
 	${PROJECT_SOURCE_DIR}/libraries/TILLDataParser/TILLDataParser.cxx
 	${PROJECT_SOURCE_DIR}/libraries/TILLDataParser/TILLDataParserException.cxx
 	)
-target_link_libraries(TILLDataParser TLst)
+target_link_libraries(TILLDataParser TLst ${GRSI_LIBRARIES})
 
 add_library(TFipps SHARED
 	${PROJECT_SOURCE_DIR}/libraries/TILLAnalysis/TFipps/TFipps.cxx
@@ -106,17 +117,20 @@ add_library(TFippsLaBr SHARED
 	${PROJECT_SOURCE_DIR}/libraries/TILLAnalysis/TFippsLaBr/TFippsLaBrBgoHit.cxx
 	)
 root_generate_dictionary(G__TFippsLaBr TFippsLaBr.h TFippsLaBrHit.h TFippsLaBrBgo.h TFippsLaBrBgoHit.h MODULE TFippsLaBr LINKDEF ${PROJECT_SOURCE_DIR}/libraries/TILLAnalysis/TFippsLaBr/LinkDef.h)
+target_link_libraries(TFippsLaBr ${GRSI_LIBRARIES})
 
 add_library(TFippsTAC SHARED
 	${PROJECT_SOURCE_DIR}/libraries/TILLAnalysis/TFippsTAC/TFippsTAC.cxx
 	${PROJECT_SOURCE_DIR}/libraries/TILLAnalysis/TFippsTAC/TFippsTACHit.cxx
 	)
 root_generate_dictionary(G__TFippsTAC TFippsTAC.h TFippsTACHit.h MODULE TFippsTAC LINKDEF ${PROJECT_SOURCE_DIR}/libraries/TILLAnalysis/TFippsTAC/LinkDef.h)
+target_link_libraries(TFippsTAC ${GRSI_LIBRARIES})
 
 add_library(TFippsPulser SHARED
 	${PROJECT_SOURCE_DIR}/libraries/TILLAnalysis/TFippsPulser/TFippsPulser.cxx
 	)
 root_generate_dictionary(G__TFippsPulser TFippsPulser.h MODULE TFippsPulser LINKDEF ${PROJECT_SOURCE_DIR}/libraries/TILLAnalysis/TFippsPulser/LinkDef.h)
+target_link_libraries(TFippsPulser ${GRSI_LIBRARIES})
 
 ##----------------------------------------------------------------------------
 # add the global library with the functions to create files and parsers
@@ -125,7 +139,7 @@ set(ILLDATA_LIBRARIES TLst TILLFormat TILLDataParser TFipps TFippsLaBr TFippsTAC
 add_library(ILLData SHARED
 	${PROJECT_SOURCE_DIR}/src/ILLDataLibrary.cxx
 	)
-target_link_libraries(ILLData ${ILLDATA_LIBRARIES})
+target_link_libraries(ILLData ${ILLDATA_LIBRARIES} ${GRSI_LIBRARIES})
 add_dependencies(ILLData ILLDataVersion)
 
 ##----------------------------------------------------------------------------
@@ -138,4 +152,3 @@ add_custom_target(ILLDataVersion
                     -D GIT_EXECUTABLE=${GIT_EXECUTABLE}
                     -P ${CMAKE_SOURCE_DIR}/GenerateVersionHeader.cmake
   )
-
