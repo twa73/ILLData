@@ -82,18 +82,7 @@ add_library(TILLFormat SHARED
 	${PROJECT_SOURCE_DIR}/libraries/TILLFormat/TILLMnemonic.cxx
 	)
 root_generate_dictionary(G__TILLFormat TILLDetectorInformation.h TILLMnemonic.h MODULE TILLFormat LINKDEF ${PROJECT_SOURCE_DIR}/libraries/TILLFormat/LinkDef.h)
-target_link_libraries(TILLFormat TFipps TFippsLaBr TFippsTAC TFippsPulser ${GRSI_LIBRARIES})
-
-# ---- macOS: allow unresolved symbols (TIfin::Class etc.) in this dylib
-if(APPLE)
-    # CMake ≥ 3.15 supports target_link_options
-    target_link_options(TILLFormat PRIVATE "-undefined" "dynamic_lookup")
-endif()
-
-target_link_libraries(TILLFormat
-    TFipps TFippsLaBr TFippsTAC TFippsPulser
-    ${GRSI_LIBRARIES}
-)
+target_link_libraries(TILLFormat TFipps TFippsLaBr TFippsTAC TFippsPulser TIfin ${GRSI_LIBRARIES})
 
 add_library(TILLDataParser SHARED
 	${PROJECT_SOURCE_DIR}/libraries/TILLDataParser/TILLDataParser.cxx
@@ -109,6 +98,15 @@ add_library(TFipps SHARED
 	)
 root_generate_dictionary(G__TFipps TFipps.h TFippsHit.h TFippsBgo.h TFippsBgoHit.h MODULE TFipps LINKDEF ${PROJECT_SOURCE_DIR}/libraries/TILLAnalysis/TFipps/LinkDef.h)
 target_link_libraries(TFipps ${GRSI_LIBRARIES})
+
+add_library(TIfin SHARED
+	${PROJECT_SOURCE_DIR}/libraries/TILLAnalysis/TIfin/TIfin.cxx
+	${PROJECT_SOURCE_DIR}/libraries/TILLAnalysis/TIfin/TIfinHit.cxx
+	${PROJECT_SOURCE_DIR}/libraries/TILLAnalysis/TIfin/TIfinBgo.cxx
+	${PROJECT_SOURCE_DIR}/libraries/TILLAnalysis/TIfin/TIfinBgoHit.cxx
+	)
+root_generate_dictionary(G__TIfin TIfin.h TIfinHit.h TIfinBgo.h TIfinBgoHit.h MODULE TIfin LINKDEF ${PROJECT_SOURCE_DIR}/libraries/TILLAnalysis/TIfin/LinkDef.h)
+target_link_libraries(TIfin ${GRSI_LIBRARIES})
 
 add_library(TFippsLaBr SHARED
 	${PROJECT_SOURCE_DIR}/libraries/TILLAnalysis/TFippsLaBr/TFippsLaBr.cxx
@@ -134,7 +132,7 @@ target_link_libraries(TFippsPulser ${GRSI_LIBRARIES})
 
 ##----------------------------------------------------------------------------
 # add the global library with the functions to create files and parsers
-set(ILLDATA_LIBRARIES TLst TILLFormat TILLDataParser TFipps TFippsLaBr TFippsTAC TFippsPulser)
+set(ILLDATA_LIBRARIES TLst TILLFormat TILLDataParser TFipps TFippsLaBr TFippsTAC TFippsPulser TIfin)
 
 add_library(ILLData SHARED
 	${PROJECT_SOURCE_DIR}/src/ILLDataLibrary.cxx
